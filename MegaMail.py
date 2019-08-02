@@ -1,11 +1,15 @@
 import MegaLogger
 import smtplib
 from email.mime.text import MIMEText
+import socks
 
 
 def SendMail( Subject, Content, ToUser ):
     gmail_user = 'pickman8992@gmail.com'
     gmail_password = 'Starcraft2'
+
+    #socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, '10.160.3.88', 8080)
+    #socks.wrap_module(smtplib)
 
     msg = MIMEText(Content)
     msg['Subject'] = Subject
