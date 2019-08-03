@@ -1,7 +1,7 @@
 import MegaLogger
 import smtplib
 from email.mime.text import MIMEText
-import socks
+#import socks
 
 
 def SendMail( Subject, Content, ToUser ):
