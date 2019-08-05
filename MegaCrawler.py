@@ -13,27 +13,49 @@ global gURLTail
 global gURLList
 gURLHead = "http://www03.eyny.com/forum-205-"
 gURLTail = ".html"
+# 檢查10頁內容
 gURLList = ["3DN3CFFH",
-            # "3W0P8JX0",
-            # "42RLY2A3",
-            # "2PKGH375",
-            # "6VVWY3HI",
-            # "22HTLHS3",
-            # "9FJC8P4V",
-            # "2JSJRQNM",
-            # "C9NN8QCB",
-            # "22HTMFFX",
+            "3W0P8JX0",
+            "42RLY2A3",
+            "2PKGH375",
+            "6VVWY3HI",
+            "22HTLHS3",
+            "9FJC8P4V",
+            "2JSJRQNM",
+            "C9NN8QCB",
+            "22HTMFFX",
             # "7L1GLMYY",
             # "2E1N3F54",
             # "HMFDIE74",
             # "3DN3FGJR",
             # "5QIKYKU2",
-            # "5WAHP375",
-            # "2PKGK4BF",
-            # "8QESP4EK",
-            # "3W0PCIP5",
-            # "BA27YQ1X"
             ]
+
+
+def TestEynyWeb():
+    url = gURLHead + gURLList[1] + gURLTail
+    dfs = pd.read_html(url)
+    MegaLogger.Write("table num : " + str(len(dfs)))
+    # df = dfs[len(dfs)-1]
+    df = GetMovieTableDF(dfs)
+    # print(df)
+    print(len(df.columns))
+    print(df.iloc[:, 0])
+
+
+
+# 取得電影列table, table數量會變化，故以條件判斷
+def GetMovieTableDF(dfs):
+    for tableidx in range(len(dfs)):
+        df = dfs[tableidx]
+        if ( len(df.columns) == 6 ):
+            match = re.search(r'201.-*', df.iloc[2,3])
+            if ( match is not None ):
+                return df
+            else:
+                continue
+        else:
+            continue
 
 def GetEynyWeb( ):
     global gURLHead
@@ -48,14 +70,10 @@ def GetEynyWeb( ):
         # 取得網頁內容置入dataframes
         dfs = pd.read_html(url)
         MegaLogger.Write("table num : " + str(len(dfs)))
-        # 取得電影列table, table數量會變化，電影列table為最後一個，故以dfs長度做判斷
-        if ( len(dfs) > 12 ):
-            df = dfs[len(dfs) - 2]
-        else:
-            df = dfs[len(dfs) - 1]
+
+        df = GetMovieTableDF(dfs)
         # 去掉第一列NaN
         df = df.drop(0)
-
 
         # print("df.shape ===== ")
         # print(df.shape)
@@ -73,7 +91,6 @@ def GetEynyWeb( ):
         # MegaLogger.Write(str(df.info()))
         # MegaLogger.Write("df ===== ")
         # MegaLogger.Write(str(df))
-
         # print(df.iloc[:,3])
         # print(df.iloc[1, 3])
         # MegaLogger.Write( "df.index = " + str(df.index) )
@@ -96,7 +113,7 @@ def GetEynyWeb( ):
                     if ( datestr == today ) :
                         # MegaLogger.Write("datestr = today")
                         MegaLogger.Write( "Movie Str =" + str(df.iloc[tableidx, 2]) )
-                        MatchList.append(df.iloc[tableidx,2])
+                        MatchList.append(str(df.iloc[tableidx,2])+"\n")
                     else :
                         # MegaLogger.Write("datestr != today")
                         MegaLogger.Write( "Not Movie Str =" + str(df.iloc[tableidx, 2]) )
