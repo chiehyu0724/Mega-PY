@@ -70,7 +70,9 @@ def GetEynyWeb( ):
         # 取得網頁內容置入dataframes
         dfs = pd.read_html(url)
         MegaLogger.Write("table num : " + str(len(dfs)))
-
+        # 防止抓不到table意外狀況發生
+        if ( len(dfs) < 8 ):
+            continue
         df = GetMovieTableDF(dfs)
         # 去掉第一列NaN
         df = df.drop(0)
