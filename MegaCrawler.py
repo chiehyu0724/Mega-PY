@@ -2,11 +2,9 @@ import MegaLogger
 import pandas as pd
 import re
 import MegaDate
-import numpy as np
-
-#import requests
-from io import StringIO
+from bs4 import BeautifulSoup
 import time
+from selenium import webdriver
 
 global gURLHead
 global gURLTail
@@ -43,7 +41,6 @@ def TestEynyWeb():
     print(df.iloc[:, 0])
 
 
-
 # 取得電影列table, table數量會變化，故以條件判斷
 def GetMovieTableDF(dfs):
     for tableidx in range(len(dfs)):
@@ -57,18 +54,46 @@ def GetMovieTableDF(dfs):
         else:
             continue
 
+def LoginWeb():
+    USER = 'zjyu0724'
+    PASSWORD = 'Starcraft2'
+    LOGIN_URL = 'http://www06.eyny.com/member.php?mod=logging&action=login'
+
+    driver = webdriver.Chrome('./chromedriver')
+    driver.get(LOGIN_URL)
+    elem = driver.find_element_by_name('username')
+    elem.clear()
+    elem.send_keys(USER)
+    password = driver.find_element_by_name('password')
+    password.clear()
+    password.send_keys(PASSWORD)
+    elem.submit()
+    # print(driver.page_source)
+    time.sleep(10)
+    MegaLogger.Write("登入完成")
+
+    return driver
+
+
 def GetEynyWeb( ):
     global gURLHead
     global gURLTail
     global gURLList
     MatchList = []
-    #urlidx=0
+
+    driver = LoginWeb()
+
     for urlidx in range(len(gURLList)):
         url = gURLHead + gURLList[urlidx] + gURLTail
         MegaLogger.Write("\n\n\n PAGE" + str(urlidx+1))
         MegaLogger.Write(url + "===========================")
+
+        driver.get(url)
+        time.sleep(2)
+        soup = BeautifulSoup(driver.page_source, 'html.parser')
+
         # 取得網頁內容置入dataframes
-        dfs = pd.read_html(url)
+        dfs = pd.read_html(soup.prettify())
         MegaLogger.Write("table num : " + str(len(dfs)))
         # 防止抓不到table意外狀況發生
         if ( len(dfs) < 8 ):
@@ -77,16 +102,6 @@ def GetEynyWeb( ):
         # 去掉第一列NaN
         df = df.drop(0)
 
-        # print("df.shape ===== ")
-        # print(df.shape)
-        # print("df.describe() ===== ")
-        # print(df.describe())
-        # MegaLogger.Write("df.head() ===== ")
-        # MegaLogger.Write(str(df.head()))
-        # print("df.tail() ===== ")
-        # print(df.tail())
-        # print("df.columns ===== ")
-        # print(df.columns)
         # MegaLogger.Write("df.index ===== ")
         # MegaLogger.Write(str(df.index))
         # MegaLogger.Write("df.info() ===== ")
@@ -113,11 +128,9 @@ def GetEynyWeb( ):
                     today = MegaDate.GetToday()
 
                     if ( datestr == today ) :
-                        # MegaLogger.Write("datestr = today")
                         MegaLogger.Write( "Movie Str =" + str(df.iloc[tableidx, 2]) )
                         MatchList.append(str(df.iloc[tableidx,2])+"\n")
                     else :
-                        # MegaLogger.Write("datestr != today")
                         MegaLogger.Write( "Not Movie Str =" + str(df.iloc[tableidx, 2]) )
 
         time.sleep(5)
