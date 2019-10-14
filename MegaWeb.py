@@ -36,9 +36,15 @@ def GetImg( Driver, IMG_URL ):
         os.makedirs( folder_path )
 
     # html = requests.get(item.get('src')) # use 'get' to get photo link path , requests = send request
-    img_name = WorkDir + '\\' + folder_path + 'aimg.jpg'
+    img_name = WorkDir + '\\' + folder_path + 'aimg_'+str(time.time())+'.jpg'
     print(img_name)
 
+    Driver.get(IMG_URL)
+    pyautogui.hotkey('ctrl', 's')
+    time.sleep(1)
+    pyautogui.press('shift')
+    pyautogui.typewrite(img_name)
+    pyautogui.hotkey('enter')
 
     # Obtain session id from Selenium cookies
     # cookies = {
@@ -58,15 +64,8 @@ def GetImg( Driver, IMG_URL ):
     # r = s.get(IMG_URL, headers=headers)
 
     # 保存 Cookies
-    pickle.dump( Driver.get_cookies(), open("cookies.pkl", "wb"))
+    # pickle.dump( Driver.get_cookies(), open("cookies.pkl", "wb"))
 
-    # 载入 Cookies
-    Driver.get(IMG_URL)
-    pyautogui.hotkey('ctrl', 's')
-    time.sleep(1)
-    pyautogui.press('shift')
-    pyautogui.typewrite(img_name)
-    pyautogui.hotkey('enter')
     # cookies = pickle.load(open("cookies.pkl", "rb"))
     #
     # s = requests.Session()
@@ -107,27 +106,26 @@ def LoginWeb():
     # print(driver.page_source)
     # time.sleep(10)
     MegaLogger.Write("登入完成")
+    time.sleep(3)
 
-    # driver.get('http://www06.eyny.com/forum-205-3W0P8JX0.html')
-    driver.get('http://www06.eyny.com/thread-12125929-1-3W0P8JX0.html')
+    driver.get('http://www06.eyny.com/forum-205-3W0P8JX0.html')
 
     soup = BeautifulSoup(driver.page_source, 'html.parser')
-    MegaLogger.Write(soup.prettify())
+    movietable = soup.find('table', summary='forum_205')
+    trs = movietable.find_all('tr')
+    for idx, tr in enumerate(trs):
+        a = tr.find('th').find('a', href=re.compile('thread-*'))
+        if (a is not None):
+            print(a['href'])
+            if ( idx < 3 ):
+                driver.get( 'http://www06.eyny.com/' + a['href'] )
+                # print('http://www06.eyny.com/' + a['href'])
+                soup = BeautifulSoup(driver.page_source, 'html.parser')
+                imgtags = soup.find_all(id=re.compile("aimg_*"))
+                print(imgtags[0])
+                GetImg(driver, imgtags[0].get('file'))
 
-    dfs = pd.read_html(soup.prettify())
-    print( len(dfs) )
-
-
-    imgtags = soup.find_all(id=re.compile("aimg_*"))
-    print(imgtags[0].get('file'))
-    GetImg(driver, imgtags[0].get('file'))
     driver.close
-
-    time.sleep(5)
-    # session_requests = requests.session()
-    # result = session_requests.get(LOGIN_URL)
-    # tree = html.fromstring(result.text)
-    # authenticity_token = list(set(tree.xpath('//input[@name="csrfmiddlewaretoken"]/@value')))[0]
 
 
 LoginWeb()

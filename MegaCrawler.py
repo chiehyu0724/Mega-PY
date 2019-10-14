@@ -11,17 +11,17 @@ global gURLTail
 global gURLList
 gURLHead = "http://www03.eyny.com/forum-205-"
 gURLTail = ".html"
-# 檢查10頁內容
+# 檢查數頁內容
 gURLList = ["3DN3CFFH",
             "3W0P8JX0",
             "42RLY2A3",
             "2PKGH375",
             "6VVWY3HI",
             "22HTLHS3",
-            "9FJC8P4V",
-            "2JSJRQNM",
-            "C9NN8QCB",
-            "22HTMFFX",
+            # "9FJC8P4V",
+            # "2JSJRQNM",
+            # "C9NN8QCB",
+            # "22HTMFFX",
             # "7L1GLMYY",
             # "2E1N3F54",
             # "HMFDIE74",
@@ -89,7 +89,7 @@ def GetEynyWeb( ):
         MegaLogger.Write(url + "===========================")
 
         driver.get(url)
-        time.sleep(2)
+        time.sleep(1)
         soup = BeautifulSoup(driver.page_source, 'html.parser')
 
         # 取得網頁內容置入dataframes
@@ -120,7 +120,7 @@ def GetEynyWeb( ):
                  continue
             else:
                 MegaLogger.Write("作者日期 :" + str(df.iloc[tableidx,3]))
-                match = re.search(r'201.-*', df.iloc[tableidx,3])
+                match = re.search(r'20([1-9][0-9])-([1-9]|1[0-2])-([1-9]|[1-2][0-9]|3[0-1])', df.iloc[tableidx, 3])
                 # print(match)
                 if ( match is not None ):
                     datestr = match.string[match.start(0)::1]
@@ -128,10 +128,10 @@ def GetEynyWeb( ):
                     today = MegaDate.GetToday()
 
                     if ( datestr == today ) :
-                        MegaLogger.Write( "Movie Str =" + str(df.iloc[tableidx, 2]) )
+                        MegaLogger.Write( "!!!!! Match Movie Str =" + str(df.iloc[tableidx, 2]) )
                         MatchList.append(str(df.iloc[tableidx,2])+"\n")
                     else :
-                        MegaLogger.Write( "Not Movie Str =" + str(df.iloc[tableidx, 2]) )
+                        MegaLogger.Write( "Movie Str =" + str(df.iloc[tableidx, 2]) )
 
         time.sleep(5)
 
